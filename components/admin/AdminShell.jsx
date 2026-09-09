@@ -2,7 +2,7 @@
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import { LayoutDashboard, Users, Calculator, Package, UserRound, Settings, LogOut, Menu, X } from 'lucide-react'
+import { LayoutDashboard, Users, Calculator, Package, UserRound, Settings, LogOut, Menu, X, BookOpen } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import Logo from '@/components/site/Logo'
 import { getAdminSession, signOut } from '@/lib/admin-auth'
@@ -12,6 +12,7 @@ const LINKS = [
   { href: '/admin/leads', label: 'Leads', icon: Users },
   { href: '/admin/calculations', label: 'Calculations', icon: Calculator },
   { href: '/admin/products', label: 'Products', icon: Package },
+  { href: '/admin/blog', label: 'Solar Journal', icon: BookOpen },
   { href: '/admin/customers', label: 'Customer Portals', icon: UserRound },
   { href: '/admin/settings', label: 'Settings', icon: Settings },
 ]

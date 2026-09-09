@@ -144,6 +144,12 @@ async function handler(request, ctx) {
       return cors(NextResponse.json({ ok: true, items: data || [] }))
     }
 
+    if (path === 'blog' && method === 'GET') {
+      const { data, error } = await db.from('blog_posts').select('id,title,slug,excerpt,content,cover_image,author,published_at,created_at').eq('is_published', true).order('published_at', { ascending: false })
+      if (error) throw error
+      return cors(NextResponse.json({ ok: true, items: data || [] }))
+    }
+
     // ===== Admin endpoints — require valid Supabase JWT =====
 
     if (path.startsWith('admin/')) {
@@ -206,6 +212,62 @@ async function handler(request, ctx) {
         const { data, error } = await db.from('products').select('*').order('sort_order').order('created_at', { ascending: false })
         if (error) throw error
         return cors(NextResponse.json({ ok: true, items: data || [] }))
+      }
+
+      if (path === 'admin/blog' && method === 'GET') {
+        const { data, error } = await db.from('blog_posts').select('*').order('created_at', { ascending: false })
+        if (error) throw error
+        return cors(NextResponse.json({ ok: true, items: data || [] }))
+      }
+
+      if (path === 'admin/blog' && method === 'POST') {
+        const body = await request.json()
+        const { data, error } = await db.from('blog_posts').insert({
+          title: String(body.title || '').slice(0, 240),
+          slug: String(body.slug || '').trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 180),
+          excerpt: String(body.excerpt || '').slice(0, 500),
+          content: String(body.content || '').slice(0, 30000),
+          cover_image: String(body.cover_image || '').slice(0, 1000),
+          author: String(body.author || user.email || 'Urjaa Solar Energy').slice(0, 120),
+          published_at: body.is_published ? (body.published_at || new Date().toISOString()) : null,
+          is_published: Boolean(body.is_published),
+        }).select().single()
+        if (error) throw error
+        return cors(NextResponse.json({ ok: true, item: data }))
+      }
+
+      if (path.startsWith('admin/blog/') && method === 'PUT') {
+        const id = path.split('/')[2]
+        const body = await request.json()
+        const update = {}
+        for (const key of ['title', 'excerpt', 'content', 'cover_image', 'author']) if (body[key] !== undefined) update[key] = String(body[key]).slice(0, key === 'content' ? 30000 : 1000)
+        if (body.slug !== undefined) update.slug = String(body.slug).trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 180)
+        if (body.is_published !== undefined) { update.is_published = Boolean(body.is_published); update.published_at = body.is_published ? (body.published_at || new Date().toISOString()) : null }
+        const { data, error } = await db.from('blog_posts').update(update).eq('id', id).select().single()
+        if (error) throw error
+        return cors(NextResponse.json({ ok: true, item: data }))
+      }
+
+      if (path.startsWith('admin/blog/') && method === 'DELETE') {
+        const id = path.split('/')[2]
+        const { error } = await db.from('blog_posts').delete().eq('id', id)
+        if (error) throw error
+        return cors(NextResponse.json({ ok: true }))
+      }
+
+      if (path === 'admin/blog/upload' && method === 'POST') {
+        const form = await request.formData()
+        const file = form.get('file')
+        if (!file || typeof file.arrayBuffer !== 'function') return cors(NextResponse.json({ ok: false, error: 'Image file required' }, { status: 400 }))
+        if (!String(file.type || '').startsWith('image/')) return cors(NextResponse.json({ ok: false, error: 'Only image files are allowed' }, { status: 400 }))
+        if (file.size > 5 * 1024 * 1024) return cors(NextResponse.json({ ok: false, error: 'Image must be under 5 MB' }, { status: 400 }))
+        await db.storage.createBucket('blog-images', { public: true }).catch(() => {})
+        const extension = String(file.name || 'image.jpg').split('.').pop().replace(/[^a-z0-9]/gi, '') || 'jpg'
+        const pathName = `${crypto.randomUUID()}.${extension}`
+        const { error } = await db.storage.from('blog-images').upload(pathName, Buffer.from(await file.arrayBuffer()), { contentType: file.type, upsert: false })
+        if (error) throw error
+        const { data } = db.storage.from('blog-images').getPublicUrl(pathName)
+        return cors(NextResponse.json({ ok: true, url: data.publicUrl }))
       }
 
       if (path === 'admin/customers' && method === 'POST') {

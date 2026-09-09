@@ -6,6 +6,7 @@ import Footer from '@/components/site/Footer'
 import WhatsAppFAB from '@/components/site/WhatsAppFAB'
 import { SITE } from '@/lib/site-config'
 import { SOLAR_JOURNAL } from '@/lib/solar-journal'
+import { getServiceClient } from '@/lib/supabase-server'
 
 export function generateStaticParams() {
   return SOLAR_JOURNAL.map(post => ({ slug: post.slug }))
@@ -18,8 +19,8 @@ export function generateMetadata({ params }) {
     : { title: `Solar Journal | ${SITE.name}` }
 }
 
-export default function JournalArticle({ params }) {
-  const post = SOLAR_JOURNAL.find(item => item.slug === params.slug)
+export default async function JournalArticle({ params }) {
+  const post = SOLAR_JOURNAL.find(item => item.slug === params.slug) || await getDatabasePost(params.slug)
   if (!post) notFound()
 
   return (
@@ -61,4 +62,14 @@ export default function JournalArticle({ params }) {
       <WhatsAppFAB />
     </main>
   )
+}
+
+async function getDatabasePost(slug) {
+  try {
+    const { data } = await getServiceClient().from('blog_posts').select('*').eq('slug', slug).eq('is_published', true).single()
+    if (!data) return null
+    return { ...data, image: data.cover_image, category: 'Urjaa Journal', date: data.published_at || 'Journal', sections: [{ heading: 'Article', body: data.content }] }
+  } catch {
+    return null
+  }
 }
