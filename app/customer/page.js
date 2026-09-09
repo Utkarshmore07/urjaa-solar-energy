@@ -1,0 +1,13 @@
+'use client'
+import { useEffect, useState } from 'react'
+import { CheckCircle2, Clock3, LogOut } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { getSupabaseClient } from '@/lib/supabase'
+
+export default function CustomerPortal() {
+  const router = useRouter(); const [data, setData] = useState(null); const [loading, setLoading] = useState(true)
+  useEffect(() => { (async () => { const { data: session } = await getSupabaseClient().auth.getSession(); if (!session.session) { router.replace('/customer/login'); return } const response = await fetch('/api/customer/portal', { headers: { Authorization: `Bearer ${session.session.access_token}` } }); const payload = await response.json(); if (payload.ok) setData(payload.account); setLoading(false) })() }, [router])
+  const logout = async () => { await getSupabaseClient().auth.signOut(); router.replace('/customer/login') }
+  if (loading) return <div className="flex min-h-screen items-center justify-center text-slate-500">Loading project portal…</div>
+  return <main className="min-h-screen bg-slate-50"><header className="border-b border-slate-200 bg-white"><div className="mx-auto flex max-w-5xl items-center justify-between px-5 py-5"><div><div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-emerald-600">Urjaa Solar Energy</div><h1 className="mt-1 font-display text-xl font-bold text-[#0f2447]">Your project portal</h1></div><button onClick={logout} className="flex items-center gap-2 text-sm text-slate-500"><LogOut className="h-4 w-4" /> Sign out</button></div></header><div className="mx-auto max-w-5xl px-5 py-8"><div className="rounded-xl border border-slate-200 bg-white p-6"><div className="text-sm text-slate-500">Project status</div><div className="mt-1 font-display text-2xl font-bold capitalize text-[#0f2447]">{data?.status || 'In progress'}</div><div className="mt-6 space-y-3">{(data?.project_updates || []).map(update => <div key={update.id} className="flex gap-3 rounded-lg border border-slate-100 p-4"><div className="mt-0.5 text-emerald-600">{update.status === 'complete' ? <CheckCircle2 className="h-5 w-5" /> : <Clock3 className="h-5 w-5" />}</div><div><div className="font-semibold text-[#0f2447]">{update.title}</div><div className="mt-1 text-sm text-slate-600">{update.description}</div><div className="mt-2 text-xs font-semibold uppercase tracking-wider text-slate-400">{update.status.replace('_', ' ')}</div></div></div>)}{!data?.project_updates?.length && <p className="text-sm text-slate-500">Your project updates will appear here after the team creates your portal.</p>}</div></div></div></main>
+}
