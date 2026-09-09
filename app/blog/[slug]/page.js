@@ -12,15 +12,17 @@ export function generateStaticParams() {
   return SOLAR_JOURNAL.map(post => ({ slug: post.slug }))
 }
 
-export function generateMetadata({ params }) {
-  const post = SOLAR_JOURNAL.find(item => item.slug === params.slug)
+export async function generateMetadata({ params }) {
+  const { slug } = await params
+  const post = SOLAR_JOURNAL.find(item => item.slug === slug) || await getDatabasePost(slug)
   return post
     ? { title: `${post.title} | ${SITE.name}`, description: post.excerpt }
     : { title: `Solar Journal | ${SITE.name}` }
 }
 
 export default async function JournalArticle({ params }) {
-  const post = SOLAR_JOURNAL.find(item => item.slug === params.slug) || await getDatabasePost(params.slug)
+  const { slug } = await params
+  const post = SOLAR_JOURNAL.find(item => item.slug === slug) || await getDatabasePost(slug)
   if (!post) notFound()
 
   return (
