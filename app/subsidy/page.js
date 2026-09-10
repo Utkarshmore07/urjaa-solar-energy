@@ -37,6 +37,13 @@ const HOW_TO_APPLY = [
   { n: '07', t: 'Subsidy disbursement', d: 'Post-verification, the subsidy amount is credited directly to your bank account.' },
 ]
 
+const STATE_SUPPORT = [
+  { state: 'Uttar Pradesh', authority: 'UPNEDA / local DISCOM', support: 'State and DISCOM processes may apply alongside central assistance. No single additional household cash amount is guaranteed across all districts.', source: 'https://upneda.org.in' },
+  { state: 'Delhi', authority: 'GNCTD / DISCOM', support: 'Delhi Solar Policy support is linked to the current policy and DISCOM process. Check the active generation-based incentive rules before applying.', source: 'https://solar.delhi.gov.in' },
+  { state: 'Gujarat', authority: 'GERC / DISCOM', support: 'Rooftop solar benefits are administered through the current state and DISCOM framework. Eligibility and rates can change with policy orders.', source: 'https://geda.gujarat.gov.in' },
+  { state: 'Other states', authority: 'State renewable agency / DISCOM', support: 'State support is not uniform. Your state agency and electricity distributor are the authoritative sources for any additional incentive.', source: 'https://mnre.gov.in' },
+]
+
 export default function SubsidyPage() {
   return (
     <main className="bg-white">
@@ -81,7 +88,7 @@ export default function SubsidyPage() {
             <div className="mt-4 flex items-start gap-2.5 p-4 rounded-lg bg-amber-50 border border-amber-200 text-sm text-amber-800">
               <AlertCircle className="h-4 w-4 shrink-0 mt-0.5 text-amber-600" />
               <span>
-                <strong>Disclaimer:</strong> Subsidy amounts, eligibility criteria and scheme guidelines are set by the Government of India and are subject to change without notice. Always verify the current terms on the official portal. Information last checked: August 2025.
+                <strong>Disclaimer:</strong> Subsidy amounts, eligibility criteria and scheme guidelines are set by the Government of India and are subject to change without notice. Always verify the current terms on the official portal. Information last checked: 10 September 2026.
               </span>
             </div>
           </div>
@@ -118,6 +125,14 @@ export default function SubsidyPage() {
               </div>
             </div>
           </div>
+        </div>
+      </section>
+
+      <section className="border-y border-slate-200 bg-[#f3f7f6] py-16">
+        <div className="max-w-7xl mx-auto px-5 lg:px-8">
+          <div className="max-w-2xl"><div className="text-xs font-semibold tracking-[0.2em] uppercase text-[#16a34a] mb-3">State support map</div><h2 className="font-display text-2xl md:text-3xl font-bold text-[#0f2447]">State incentives can sit alongside central subsidy.</h2><p className="mt-3 text-sm leading-relaxed text-slate-600">Some states and DISCOMs offer additional support, generation-based incentives or separate rooftop-solar routes. These are policy-led, location-specific and can change, so we link to the responsible authority instead of promising a fixed amount.</p></div>
+          <div className="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-4">{STATE_SUPPORT.map(item => <article key={item.state} className="group rounded-xl border border-slate-200 bg-white p-5 transition-all duration-300 hover:-translate-y-1 hover:border-emerald-300 hover:shadow-lg"><div className="flex items-start justify-between"><div className="text-lg font-bold text-[#0f2447]">{item.state}</div><div className="h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_0_4px_rgba(22,163,74,0.12)]" /></div><div className="mt-4 text-[10px] font-bold uppercase tracking-wider text-emerald-700">{item.authority}</div><p className="mt-2 text-xs leading-relaxed text-slate-600">{item.support}</p><a href={item.source} target="_blank" rel="noreferrer" className="mt-4 inline-flex items-center gap-1.5 text-xs font-semibold text-[#0f2447] hover:text-emerald-700">Check official source <ExternalLink className="h-3.5 w-3.5" /></a></article>)}</div>
+          <div className="mt-6 flex items-start gap-2.5 rounded-lg border border-amber-200 bg-amber-50 p-4 text-xs leading-relaxed text-amber-800"><AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" /><span><strong>Important:</strong> State support is not automatically available to every applicant. Confirm the current scheme, tariff category, vendor requirement and DISCOM process before making a financial decision.</span></div>
         </div>
       </section>
 

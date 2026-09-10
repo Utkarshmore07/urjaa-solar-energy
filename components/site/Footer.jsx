@@ -29,11 +29,11 @@ export default function Footer() {
               { n: 'Residential Solar', h: '/services/residential' },
               { n: 'Commercial Solar', h: '/services/commercial' },
               { n: 'Industrial Solar', h: '/services/industrial' },
-              { n: 'Hybrid Solar', h: '/services/hybrid-solar-system' },
               { n: 'Solar Products', h: '/products' },
             ] },
             { t: 'Company', l: [
               { n: 'About Us', h: '/about' },
+              { n: 'Vision & Mission', h: '/vision-mission' },
               { n: 'Projects', h: '/projects' },
               { n: 'Solar Journal', h: '/blog' },
               { n: 'FAQ', h: '/faq' },

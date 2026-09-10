@@ -287,6 +287,10 @@ function SystemDiagram() {
         <div className="relative overflow-hidden border-b border-white/10 px-6 py-8 sm:px-10 lg:border-b-0 lg:border-r lg:py-10">
           <div className="absolute -right-16 -top-16 h-48 w-48 rounded-full bg-amber-400/10 blur-3xl" />
           <div className="relative">
+            <div className="mb-7 overflow-hidden rounded-xl border border-white/15 bg-white/10">
+              <img src="https://images.unsplash.com/photo-1509391366360-2e959784a276?w=1000&auto=format&fit=crop&q=85" alt="Rooftop solar panels receiving sunlight" className="h-36 w-full object-cover opacity-90 sm:h-44" />
+              <div className="flex items-center justify-between px-3 py-2 text-[10px] uppercase tracking-[0.16em] text-slate-400"><span>Field view / rooftop array</span><span className="text-emerald-300">Live energy path</span></div>
+            </div>
             <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-amber-300"><span className="h-1.5 w-1.5 rounded-full bg-amber-300" /> Field logic</div>
             <h3 className="mt-4 max-w-sm font-display text-2xl font-bold tracking-tight text-white sm:text-3xl">From sunlight to useful power.</h3>
             <p className="mt-3 max-w-sm text-sm leading-relaxed text-slate-300">Every system is designed around the actual movement of energy through your site, not a one-size-fits-all package.</p>
@@ -754,33 +758,34 @@ function Testimonials() {
           </div>
         </motion.div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {TESTIMONIALS.map((t, i) => (
+        <div className="relative overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_6%,black_94%,transparent)]">
+          <motion.div
+            animate={{ x: ['0%', '-50%'] }}
+            transition={{ duration: 30, repeat: Infinity, ease: 'linear' }}
+            className="flex w-max gap-4 pr-4 motion-reduce:animate-none"
+          >
+          {[...TESTIMONIALS, ...TESTIMONIALS].map((t, i) => (
             <motion.div
-              key={i}
+              key={`${t.name}-${i}`}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.08, duration: 0.5 }}
-              className="rounded-xl border border-slate-200 bg-white p-6 hover:shadow-md transition-all"
+              whileHover={{ y: -6 }}
+              className="w-[min(310px,82vw)] shrink-0 rounded-2xl border border-slate-200 bg-white p-6 shadow-[0_8px_24px_rgba(15,36,71,0.05)] transition-shadow hover:border-emerald-300 hover:shadow-xl"
             >
-              <div className="flex items-center gap-1 mb-3">
+              <div className="mb-4 flex items-center justify-between"><div className="flex items-center gap-1">
                 {[...Array(t.rating)].map((_, j) => (
                   <Star key={j} className="h-3.5 w-3.5 text-amber-400 fill-current" />
                 ))}
-              </div>
-              <p className="text-sm text-slate-700 leading-relaxed mb-5">&ldquo;{t.quote}&rdquo;</p>
-              <div className="flex items-center gap-3 pt-4 border-t border-slate-100">
-                <div className="h-10 w-10 rounded-full overflow-hidden bg-slate-100 shrink-0">
-                  <img src={t.img} alt={t.name} className="w-full h-full object-cover" />
-                </div>
-                <div>
-                  <div className="text-sm font-semibold text-[#0f2447]">{t.name}</div>
-                  <div className="text-xs text-slate-500">{t.role}</div>
-                </div>
+              </div><span className="text-[10px] font-semibold uppercase tracking-wider text-emerald-600">Verified story</span></div>
+              <div className="mb-4 flex items-center gap-3"><div className="h-12 w-12 overflow-hidden rounded-full border-2 border-emerald-100 bg-slate-100"><img src={t.img} alt={`${t.name}, ${t.role}`} className="h-full w-full object-cover" /></div><div><div className="text-sm font-semibold text-[#0f2447]">{t.name}</div><div className="text-xs text-slate-500">{t.role}</div></div></div>
+              <div className="border-l-2 border-amber-300 pl-4">
+                <p className="text-sm leading-relaxed text-slate-700">&ldquo;{t.quote}&rdquo;</p>
               </div>
             </motion.div>
           ))}
+          </motion.div>
         </div>
       </div>
     </section>
@@ -799,27 +804,38 @@ function WhyChooseUs() {
   ]
 
   return (
-    <section className="py-20 bg-slate-50 border-y border-slate-200">
+    <section className="relative overflow-hidden py-20 bg-[#f4f7f8] border-y border-slate-200">
+      <div className="pointer-events-none absolute inset-0 opacity-70" aria-hidden="true">
+        <div className="absolute -left-24 top-24 h-72 w-72 rounded-full border border-emerald-200/70" />
+        <div className="absolute -left-12 top-36 h-48 w-48 rounded-full border border-amber-200/60" />
+        <div className="absolute right-0 top-0 h-full w-1/3 bg-gradient-to-bl from-[#dcebe7]/70 via-transparent to-transparent" />
+      </div>
       <div className="max-w-7xl mx-auto px-5 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
-          className="text-center mb-12"
+          className="relative mb-12 flex flex-col items-center text-center"
         >
-          <div className="text-[11px] font-semibold tracking-[0.2em] uppercase mb-3" style={{ color: EMERALD }}>
-            Why Choose Us
+          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-white/80 px-3 py-1.5 shadow-sm">
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 shadow-[0_0_0_4px_rgba(22,163,74,0.12)]" />
+            <span className="text-[10px] font-bold tracking-[0.22em] uppercase" style={{ color: EMERALD }}>Why Choose Us</span>
           </div>
           <h2 className="font-display text-3xl md:text-4xl font-bold tracking-tight max-w-2xl mx-auto" style={{ color: NAVY }}>
-            What makes Urjaa Solar different.
+            What makes Urjaa Solar different<span style={{ color: AMBER }}>.</span>
           </h2>
           <p className="mt-3 text-sm text-slate-500 max-w-xl mx-auto">
             Six commitments we make on every project — residential, commercial and industrial.
           </p>
+          <div className="mt-6 flex items-center gap-3 text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-400">
+            <span className="h-px w-10 bg-emerald-300" />
+            Built around your site
+            <span className="h-px w-10 bg-emerald-300" />
+          </div>
         </motion.div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="relative grid md:grid-cols-2 lg:grid-cols-3 gap-4">
           {items.map((it, i) => (
             <motion.div
               key={i}
@@ -827,16 +843,27 @@ function WhyChooseUs() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.07, duration: 0.5 }}
-              className="rounded-xl border border-slate-200 bg-white p-6 hover:border-slate-300 hover:shadow-md transition-all"
+              className="group relative overflow-hidden rounded-2xl border border-slate-200/90 bg-white/95 p-6 shadow-[0_8px_24px_rgba(15,36,71,0.04)] transition-all duration-300 hover:-translate-y-1 hover:border-emerald-300 hover:shadow-[0_18px_36px_rgba(15,36,71,0.12)]"
             >
-              <div
-                className="h-11 w-11 rounded-lg flex items-center justify-center mb-4 text-white"
-                style={{ background: `linear-gradient(135deg, ${NAVY}, #1e3a5f)` }}
-              >
-                {it.icon}
+              <div className="absolute right-5 top-5 text-[10px] font-bold tracking-[0.18em] text-slate-300 transition-colors group-hover:text-emerald-500">
+                0{i + 1}
               </div>
-              <h3 className="font-semibold text-base mb-2" style={{ color: NAVY }}>{it.t}</h3>
-              <p className="text-sm text-slate-600 leading-relaxed">{it.d}</p>
+              <div className="mb-5 flex items-center justify-between">
+                <div
+                  className="flex h-11 w-11 items-center justify-center rounded-xl text-white shadow-[0_8px_16px_rgba(15,36,71,0.18)] transition-transform duration-300 group-hover:scale-105"
+                  style={{ background: `linear-gradient(145deg, ${NAVY}, #1e3a5f)` }}
+                >
+                  {it.icon}
+                </div>
+                <div className="mr-8 flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> Verified standard
+                </div>
+              </div>
+              <h3 className="mb-2 font-display text-base font-bold" style={{ color: NAVY }}>{it.t}</h3>
+              <p className="text-sm leading-relaxed text-slate-600">{it.d}</p>
+              <div className="mt-6 h-1 overflow-hidden rounded-full bg-slate-100">
+                <div className="h-full w-1/3 rounded-full bg-gradient-to-r from-emerald-500 to-amber-400 transition-all duration-500 group-hover:w-2/3" />
+              </div>
             </motion.div>
           ))}
         </div>
