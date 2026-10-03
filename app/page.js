@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import dynamic from 'next/dynamic'
 import { motion } from 'framer-motion'
-import { ArrowDown, ArrowRight, ShieldCheck, Wrench, CheckCircle2, Sun, FileText, Sparkles, Star, Clock, Phone, MessageCircle, ClipboardCheck, BarChart3, PhoneCall, Zap, Award, Users, TrendingUp, Building2, MapPin, Home, Gauge } from 'lucide-react'
+import { ArrowDown, ArrowRight, ShieldCheck, Wrench, CheckCircle2, Sun, FileText, Star, Clock, Phone, MessageCircle, ClipboardCheck, BarChart3, PhoneCall, Zap, Award, Users, TrendingUp, Building2, MapPin, Home, Gauge } from 'lucide-react'
 import { Toaster } from 'sonner'
 import { Button } from '@/components/ui/button'
 import Nav from '@/components/site/Nav'
@@ -150,11 +150,10 @@ function ValueProps() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.08, duration: 0.5 }}
-              className="rounded-xl border border-slate-200 bg-white p-6 hover:border-slate-300 hover:shadow-md transition-all"
+              className="rounded-lg border border-slate-200 bg-white p-6 transition-colors hover:border-slate-300"
             >
               <div
-                className="h-11 w-11 rounded-lg flex items-center justify-center mb-4"
-                style={{ background: `linear-gradient(135deg, ${EMERALD}, ${AMBER})` }}
+                className="mb-4 flex h-11 w-11 items-center justify-center rounded-lg bg-emerald-700"
               >
                 <div className="text-white">{it.icon}</div>
               </div>
@@ -632,10 +631,10 @@ function CredentialsMarquee() {
 // ─── Trust Credibility Score (TCS) ───────────────────────────────────────
 function TrustScore() {
   const scoreItems = [
-    { value: '25+', label: 'Projects Delivered', icon: <Zap className="h-5 w-5" />, color: '#fbbf24' },
-    { value: '100%', label: 'Customer Satisfaction', icon: <Star className="h-5 w-5" />, color: '#16a34a' },
-    { value: '5+', label: 'Districts Covered', icon: <MapPin className="h-5 w-5" />, color: '#3b82f6' },
-    { value: '0', label: 'Customer Complaints', icon: <ShieldCheck className="h-5 w-5" />, color: '#a855f7' },
+    { value: '25+', label: 'Projects Delivered', icon: <Zap className="h-5 w-5" /> },
+    { value: '100%', label: 'Customer Satisfaction', icon: <Star className="h-5 w-5" /> },
+    { value: '5+', label: 'Districts Covered', icon: <MapPin className="h-5 w-5" /> },
+    { value: '0', label: 'Customer Complaints', icon: <ShieldCheck className="h-5 w-5" /> },
   ]
 
   return (
@@ -666,35 +665,18 @@ function TrustScore() {
               initial={{ opacity: 0, scale: 0.9 }}
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
-              transition={{ delay: i * 0.1, duration: 0.5, type: 'spring', stiffness: 100 }}
-              className="relative rounded-2xl border border-slate-200 bg-white p-7 text-center overflow-hidden group hover:border-slate-300 hover:shadow-xl transition-all duration-500"
+              transition={{ delay: i * 0.07, duration: 0.35 }}
+              className="rounded-lg border border-slate-200 bg-white p-6 text-center transition-colors hover:border-slate-300"
             >
-              {/* Glow effect on hover */}
               <div
-                className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-                style={{ background: `radial-gradient(circle at 50% 0%, ${item.color}15 0%, transparent 70%)` }}
-              />
-              {/* Icon */}
-              <div
-                className="h-14 w-14 rounded-2xl mx-auto mb-5 flex items-center justify-center transition-transform duration-300 group-hover:scale-110"
-                style={{ background: `${item.color}15`, color: item.color }}
+                className="mx-auto mb-5 flex h-12 w-12 items-center justify-center rounded-lg bg-emerald-50 text-emerald-700"
               >
                 {item.icon}
               </div>
-              {/* Value */}
-              <div
-                className="font-display text-4xl font-black mb-2 transition-all duration-300"
-                style={{ color: item.color }}
-              >
+              <div className="mb-2 font-display text-4xl font-bold text-[#0f2447]">
                 {item.value}
               </div>
-              {/* Label */}
               <div className="text-sm font-medium text-slate-600">{item.label}</div>
-              {/* Bottom accent line */}
-              <div
-                className="absolute bottom-0 left-1/2 -translate-x-1/2 h-0.5 w-0 group-hover:w-full transition-all duration-500"
-                style={{ background: item.color }}
-              />
             </motion.div>
           ))}
         </div>
@@ -804,12 +786,7 @@ function WhyChooseUs() {
   ]
 
   return (
-    <section className="relative overflow-hidden py-20 bg-[#f4f7f8] border-y border-slate-200">
-      <div className="pointer-events-none absolute inset-0 opacity-70" aria-hidden="true">
-        <div className="absolute -left-24 top-24 h-72 w-72 rounded-full border border-emerald-200/70" />
-        <div className="absolute -left-12 top-36 h-48 w-48 rounded-full border border-amber-200/60" />
-        <div className="absolute right-0 top-0 h-full w-1/3 bg-gradient-to-bl from-[#dcebe7]/70 via-transparent to-transparent" />
-      </div>
+    <section className="border-y border-slate-200 bg-[#f4f7f8] py-20">
       <div className="max-w-7xl mx-auto px-5 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 10 }}
@@ -818,8 +795,8 @@ function WhyChooseUs() {
           transition={{ duration: 0.5 }}
           className="relative mb-12 flex flex-col items-center text-center"
         >
-          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-white/80 px-3 py-1.5 shadow-sm">
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 shadow-[0_0_0_4px_rgba(22,163,74,0.12)]" />
+          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-white px-3 py-1.5">
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-600" />
             <span className="text-[10px] font-bold tracking-[0.22em] uppercase" style={{ color: EMERALD }}>Why Choose Us</span>
           </div>
           <h2 className="font-display text-3xl md:text-4xl font-bold tracking-tight max-w-2xl mx-auto" style={{ color: NAVY }}>
@@ -843,27 +820,18 @@ function WhyChooseUs() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.07, duration: 0.5 }}
-              className="group relative overflow-hidden rounded-2xl border border-slate-200/90 bg-white/95 p-6 shadow-[0_8px_24px_rgba(15,36,71,0.04)] transition-all duration-300 hover:-translate-y-1 hover:border-emerald-300 hover:shadow-[0_18px_36px_rgba(15,36,71,0.12)]"
+              className="rounded-lg border border-slate-200 bg-white p-6 transition-colors hover:border-slate-300"
             >
-              <div className="absolute right-5 top-5 text-[10px] font-bold tracking-[0.18em] text-slate-300 transition-colors group-hover:text-emerald-500">
+              <div className="text-[10px] font-bold tracking-[0.18em] text-slate-400">
                 0{i + 1}
               </div>
-              <div className="mb-5 flex items-center justify-between">
-                <div
-                  className="flex h-11 w-11 items-center justify-center rounded-xl text-white shadow-[0_8px_16px_rgba(15,36,71,0.18)] transition-transform duration-300 group-hover:scale-105"
-                  style={{ background: `linear-gradient(145deg, ${NAVY}, #1e3a5f)` }}
-                >
+              <div className="mb-5 mt-3 flex items-center">
+                <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-[#0f2447] text-white">
                   {it.icon}
-                </div>
-                <div className="mr-8 flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
-                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> Verified standard
                 </div>
               </div>
               <h3 className="mb-2 font-display text-base font-bold" style={{ color: NAVY }}>{it.t}</h3>
               <p className="text-sm leading-relaxed text-slate-600">{it.d}</p>
-              <div className="mt-6 h-1 overflow-hidden rounded-full bg-slate-100">
-                <div className="h-full w-1/3 rounded-full bg-gradient-to-r from-emerald-500 to-amber-400 transition-all duration-500 group-hover:w-2/3" />
-              </div>
             </motion.div>
           ))}
         </div>

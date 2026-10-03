@@ -46,22 +46,6 @@ function HeroBackdrop() {
   )
 }
 
-// ─── Ambient glow ────────────────────────────────────────────────────────────
-function AmbientGlow() {
-  return (
-    <div className="absolute inset-0 z-30 pointer-events-none overflow-hidden" aria-hidden="true">
-      <div
-        className="absolute -top-20 right-20 w-96 h-96 rounded-full opacity-20 blur-3xl"
-        style={{ background: 'radial-gradient(circle, #fbbf24 0%, transparent 70%)' }}
-      />
-      <div
-        className="absolute -bottom-32 left-10 w-80 h-80 rounded-full opacity-10 blur-3xl"
-        style={{ background: 'radial-gradient(circle, #16a34a 0%, transparent 70%)' }}
-      />
-    </div>
-  )
-}
-
 // ─── Main Hero ───────────────────────────────────────────────────────────────
 export default function CinematicSolarHero() {
   const [form, setForm] = useState({ name: '', phone: '', city: '', bill: '' })
@@ -96,7 +80,6 @@ export default function CinematicSolarHero() {
       aria-label="Solar energy hero"
     >
       <HeroBackdrop />
-      <AmbientGlow />
 
       <div className="relative z-40 flex min-h-[820px] items-center pt-24 pb-16 lg:pt-28 lg:pb-20">
         <div className="mx-auto w-full max-w-7xl px-6 lg:px-8">
@@ -124,14 +107,7 @@ export default function CinematicSolarHero() {
               >
                 Switch to solar.
                 <br />
-                <span
-                  style={{
-                    backgroundImage: 'linear-gradient(90deg, #fbbf24 0%, #f97316 100%)',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                    backgroundClip: 'text',
-                  }}
-                >
+                <span className="text-amber-300">
                   Save up to 100%.
                 </span>
               </motion.h1>
@@ -156,11 +132,7 @@ export default function CinematicSolarHero() {
                 <Link href="/#calculator">
                   <Button
                     size="lg"
-                    className="h-12 px-7 font-semibold text-slate-900 border-0 shadow-xl shadow-amber-500/30 hover:shadow-2xl hover:shadow-amber-500/40 transition-all duration-300"
-                    style={{
-                      background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
-                      fontSize: '0.95rem',
-                    }}
+                    className="h-12 border border-amber-300 bg-amber-300 px-7 text-[0.95rem] font-semibold text-[#172b45] transition-colors hover:border-amber-200 hover:bg-amber-200"
                   >
                     Calculate My Savings
                     <ArrowRight className="h-4 w-4 ml-2" />
@@ -239,11 +211,10 @@ export default function CinematicSolarHero() {
               ) : (
                 // ── Form card ──────────────────────────────────────────
                 <div
-                  className="rounded-2xl overflow-hidden"
+                  className="overflow-hidden rounded-lg"
                   style={{
-                    background: 'rgba(15, 30, 55, 0.85)',
+                    background: '#10233e',
                     border: '1px solid rgba(255,255,255,0.10)',
-                    backdropFilter: 'blur(20px)',
                   }}
                 >
                   {/* Card header — dark solid bar */}
@@ -255,8 +226,7 @@ export default function CinematicSolarHero() {
                       <div>
                         <div className="flex items-center gap-2.5 mb-1">
                           <div
-                            className="h-8 w-8 rounded-lg flex items-center justify-center"
-                            style={{ background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)' }}
+                              className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-300"
                           >
                             <ThumbsUp className="h-4 w-4 text-white" />
                           </div>
@@ -340,11 +310,7 @@ export default function CinematicSolarHero() {
                       <Button
                         type="submit"
                         disabled={submitting || !form.name || !form.phone}
-                        className="h-12 w-full border-0 text-sm font-bold text-slate-900 transition-all duration-300"
-                        style={{
-                          background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
-                          boxShadow: '0 4px 24px rgba(251,191,36,0.25)',
-                        }}
+                        className="h-12 w-full border border-amber-300 bg-amber-300 text-sm font-bold text-[#172b45] transition-colors hover:bg-amber-200 disabled:border-slate-500 disabled:bg-slate-500"
                       >
                         {submitting ? (
                           'Sending…'
