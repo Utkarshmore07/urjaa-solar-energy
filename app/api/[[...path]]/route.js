@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { calculateEstimate } from '@/lib/solar-estimates'
 
 function getDb() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL
@@ -16,50 +17,27 @@ function cors(res) {
 }
 export async function OPTIONS() { return cors(new NextResponse(null, { status: 204 })) }
 
-function subsidyFor(kw) {
-  if (kw <= 1) return 30000
-  if (kw <= 2) return 60000
-  return 78000
-}
-
-function calc(input) {
-  const { monthlyBill = 3000, roofArea = 500, consumerType = 'residential', state = 'Delhi' } = input || {}
-  const stateRateMap = { Delhi: 8, Maharashtra: 9, Karnataka: 8.5, Gujarat: 7.5, 'Uttar Pradesh': 7, 'Tamil Nadu': 7.5, Rajasthan: 7, Haryana: 7.2, 'Madhya Pradesh': 7, Punjab: 7.5, Telangana: 8, Kerala: 7 }
-  const rate = stateRateMap[state] || 7.5
-  const monthlyUnits = Math.max(50, Math.round(monthlyBill / rate))
-  const dailyUnits = monthlyUnits / 30
-  const rawKw = dailyUnits / 4
-  const areaKw = roofArea / 100
-  const systemKw = Math.max(1, Math.min(rawKw, areaKw))
-  const kw = Math.round(systemKw * 10) / 10
-  const costPerKw = consumerType === 'residential' ? 65000 : (consumerType === 'commercial' ? 55000 : 50000)
-  const grossCost = Math.round(kw * costPerKw)
-  const subsidy = consumerType === 'residential' ? subsidyFor(kw) : 0
-  const netCost = grossCost - subsidy
-  const annualUnits = Math.round(kw * 4 * 365)
-  const annualSavings = Math.round(annualUnits * rate)
-  const monthlySavings = Math.round(annualSavings / 12)
-  const payback = Math.round((netCost / annualSavings) * 10) / 10
-  const twentyFive = Math.round(annualSavings * 25 * 1.05)
-  const co2 = Math.round(annualUnits * 0.82)
-  const roi = Math.round((twentyFive - netCost) / netCost * 100)
-  return { kw, grossCost, subsidy, netCost, annualUnits, annualSavings, monthlySavings, payback, twentyFiveYearSavings: twentyFive, co2Kg: co2, roiPercent: roi, rate }
-}
-
 // Verify admin JWT via Supabase service role — never trust client-supplied role
-async function verifyAdmin(request) {
+async function getAdminAccess(request) {
   const auth = request.headers.get('authorization') || ''
-  const token = auth.replace('Bearer ', '').trim()
-  if (!token) return null
+  const token = auth.replace(/^Bearer\s+/i, '').trim()
+  if (!token) return { status: 401, error: 'Missing bearer token', user: null, role: null }
   try {
     const db = getDb()
     const { data: { user }, error } = await db.auth.getUser(token)
-    if (error || !user) return null
-    const { data: profile } = await db.from('profiles').select('role').eq('id', user.id).single()
+    if (error && /api key/i.test(error.message || '')) {
+      console.error('[admin auth] Supabase rejected SUPABASE_SERVICE_ROLE_KEY:', error.message)
+      return { status: 500, error: 'Supabase server key rejected; check SUPABASE_SERVICE_ROLE_KEY', user: null, role: null }
+    }
+    if (error || !user) return { status: 401, error: 'Supabase rejected the session token', user: null, role: null }
+    const { data: profile } = await db.from('profiles').select('role').eq('id', user.id).maybeSingle()
     const allowed = ['super_admin', 'admin', 'sales', 'support']
-    if (!profile || !allowed.includes(profile.role)) return null
-    return user
-  } catch { return null }
+    if (!profile || !allowed.includes(profile.role)) return { status: 403, user, role: profile?.role || null }
+    return { status: 200, user, role: profile.role }
+  } catch (error) {
+    console.error('[admin auth] Session verification failed:', error.message)
+    return { status: 500, error: 'Session verification unavailable', user: null, role: null }
+  }
 }
 
 async function verifyUser(request) {
@@ -87,7 +65,7 @@ async function handler(request, ctx) {
 
     if (path === 'calculate' && method === 'POST') {
       const body = await request.json().catch(() => ({}))
-      const result = calc(body)
+      const result = calculateEstimate(body)
       // Fire-and-forget: don't block the response for analytics insert
       db.from('calculations').insert({ input: body, result }).then(() => {})
       return cors(NextResponse.json({ ok: true, result }))
@@ -153,8 +131,15 @@ async function handler(request, ctx) {
     // ===== Admin endpoints — require valid Supabase JWT =====
 
     if (path.startsWith('admin/')) {
-      const user = await verifyAdmin(request)
-      if (!user) return cors(NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 }))
+      const access = await getAdminAccess(request)
+      if (access.status === 401) return cors(NextResponse.json({ ok: false, error: access.error }, { status: 401 }))
+      if (access.status === 403) return cors(NextResponse.json({ ok: false, error: 'Admin or staff role required', role: access.role }, { status: 403 }))
+      if (access.status === 500) return cors(NextResponse.json({ ok: false, error: access.error }, { status: 500 }))
+      const user = access.user
+
+      if (path === 'admin/session' && method === 'GET') {
+        return cors(NextResponse.json({ ok: true, role: access.role }))
+      }
 
       if (path === 'admin/stats' && method === 'GET') {
         const [

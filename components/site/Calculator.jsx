@@ -10,28 +10,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Slider } from '@/components/ui/slider'
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { generateQuotePDF } from '@/lib/generatePDF'
+import { calculateEstimate, SOLAR_ESTIMATE_STATES } from '@/lib/solar-estimates'
 import { SITE } from '@/lib/site-config'
-
-const STATES = ['Delhi','Maharashtra','Karnataka','Gujarat','Uttar Pradesh','Tamil Nadu','Rajasthan','Haryana','Madhya Pradesh','Punjab','Telangana','Kerala']
-
-function calculateEstimate({ monthlyBill = 3000, roofArea = 500, consumerType = 'residential', state = 'Delhi' }) {
-  const stateRateMap = { Delhi: 8, Maharashtra: 9, Karnataka: 8.5, Gujarat: 7.5, 'Uttar Pradesh': 7, 'Tamil Nadu': 7.5, Rajasthan: 7, Haryana: 7.2, 'Madhya Pradesh': 7, Punjab: 7.5, Telangana: 8, Kerala: 7 }
-  const rate = stateRateMap[state] || 7.5
-  const monthlyUnits = Math.max(50, Math.round(monthlyBill / rate))
-  const systemKw = Math.max(1, Math.min(monthlyUnits / 30 / 4, roofArea / 100))
-  const kw = Math.round(systemKw * 10) / 10
-  const costPerKw = consumerType === 'residential' ? 65000 : consumerType === 'commercial' ? 55000 : 50000
-  const grossCost = Math.round(kw * costPerKw)
-  const subsidy = consumerType === 'residential' ? (kw <= 1 ? 30000 : kw <= 2 ? 60000 : 78000) : 0
-  const netCost = grossCost - subsidy
-  const annualUnits = Math.round(kw * 4 * 365)
-  const annualSavings = Math.round(annualUnits * rate)
-  const monthlySavings = Math.round(annualSavings / 12)
-  const payback = Math.round((netCost / annualSavings) * 10) / 10
-  const twentyFiveYearSavings = Math.round(annualSavings * 25 * 1.05)
-  const co2Kg = Math.round(annualUnits * 0.82)
-  return { kw, grossCost, subsidy, netCost, annualUnits, annualSavings, monthlySavings, payback, twentyFiveYearSavings, co2Kg, roiPercent: Math.round((twentyFiveYearSavings - netCost) / netCost * 100), rate }
-}
 
 export default function Calculator({ standalone = false }) {
   const [state, setState] = useState('Maharashtra')
@@ -94,7 +74,7 @@ export default function Calculator({ standalone = false }) {
                 <Label className="text-xs font-medium text-slate-600 uppercase tracking-wider">State</Label>
                 <Select value={state} onValueChange={setState}>
                   <SelectTrigger className="mt-1.5 h-11"><SelectValue /></SelectTrigger>
-                  <SelectContent>{STATES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+                  <SelectContent>{SOLAR_ESTIMATE_STATES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
               <div>

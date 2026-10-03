@@ -19,13 +19,27 @@ export default function AdminLogin() {
     e.preventDefault()
     setLoading(true)
     try {
-      const { error } = await getSupabaseClient().auth.signInWithPassword({ email, password: pwd })
+      const client = getSupabaseClient()
+      const { data, error } = await client.auth.signInWithPassword({ email, password: pwd })
       if (error) {
         toast.error(error.message || 'Invalid credentials')
       } else {
+        const response = await fetch('/api/admin/session', {
+          headers: { Authorization: `Bearer ${data.session.access_token}` },
+        })
+        const access = await response.json().catch(() => ({}))
+        if (response.status === 403) {
+          toast.error('This account is signed in but has no admin/staff role. Ask your Supabase administrator to update its profile role.')
+          return
+        }
+        if (!response.ok) {
+          await client.auth.signOut()
+          toast.error(access.error || 'Could not verify admin access. Please try again.')
+          return
+        }
         router.replace('/admin')
       }
-    } catch { toast.error('Network error') } finally { setLoading(false) }
+    } catch { toast.error('Network error while checking admin access') } finally { setLoading(false) }
   }
 
   return (
