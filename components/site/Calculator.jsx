@@ -17,7 +17,9 @@ export default function Calculator({ standalone = false }) {
   const [state, setState] = useState('Maharashtra')
   const [city, setCity] = useState('Mumbai')
   const [bill, setBill] = useState(3500)
+  const [billText, setBillText] = useState('3500')
   const [roof, setRoof] = useState(500)
+  const [roofText, setRoofText] = useState('500')
   const [consumerType, setConsumerType] = useState('residential')
   const [roofType, setRoofType] = useState('RCC')
   const [result, setResult] = useState(null)
@@ -25,6 +27,18 @@ export default function Calculator({ standalone = false }) {
   const [pdfOpen, setPdfOpen] = useState(false)
   const [pdfForm, setPdfForm] = useState({ name: '', phone: '', email: '' })
   const [pdfLoading, setPdfLoading] = useState(false)
+
+  const commitBill = () => {
+    const value = Math.min(100000, Math.max(500, Number(billText) || 500))
+    setBill(value)
+    setBillText(String(value))
+  }
+
+  const commitRoof = () => {
+    const value = Math.min(20000, Math.max(100, Number(roofText) || 100))
+    setRoof(value)
+    setRoofText(String(value))
+  }
 
   const compute = () => {
     const input = { state, city, monthlyBill: bill, roofArea: roof, consumerType, roofType }
@@ -84,13 +98,13 @@ export default function Calculator({ standalone = false }) {
             </div>
             <div>
               <div className="flex justify-between"><Label className="text-xs font-medium text-slate-600 uppercase tracking-wider">Monthly Bill</Label><span className="font-semibold text-[#0f2447] text-sm">₹{bill.toLocaleString('en-IN')}</span></div>
-              <div className="relative z-10 -mt-8 mb-1 flex justify-end"><label className="flex items-center rounded-md border border-slate-200 bg-white px-2 focus-within:border-slate-400 focus-within:ring-1 focus-within:ring-slate-300"><span className="text-sm text-slate-500">₹</span><input aria-label="Monthly bill" type="number" min="500" max="100000" step="500" value={bill} onChange={e => setBill(Math.min(100000, Math.max(500, Number(e.target.value) || 500)))} className="w-[72px] bg-transparent py-1 text-right text-sm font-semibold text-[#0f2447] outline-none" /></label></div>
-              <Slider className="mt-3" min={500} max={100000} step={500} value={[bill]} onValueChange={(v) => setBill(v[0])} />
+              <div className="relative z-10 -mt-8 mb-1 flex justify-end"><label className="flex items-center rounded-md border border-slate-200 bg-white px-2 focus-within:border-slate-400 focus-within:ring-1 focus-within:ring-slate-300"><span className="text-sm text-slate-500">₹</span><input aria-label="Monthly bill" type="number" min="500" max="100000" step="500" value={billText} onChange={e => { setBillText(e.target.value); if (e.target.value !== '') setBill(Number(e.target.value)) }} onBlur={commitBill} className="w-[72px] bg-transparent py-1 text-right text-sm font-semibold text-[#0f2447] outline-none" /></label></div>
+              <Slider className="mt-3" min={500} max={100000} step={500} value={[bill]} onValueChange={(v) => { setBill(v[0]); setBillText(String(v[0])) }} />
             </div>
             <div>
               <div className="flex justify-between"><Label className="text-xs font-medium text-slate-600 uppercase tracking-wider">Roof Area (sqft)</Label><span className="font-semibold text-[#0f2447] text-sm">{roof}</span></div>
-              <div className="relative z-10 -mt-8 mb-1 flex justify-end"><label className="flex items-center rounded-md border border-slate-200 bg-white px-2 focus-within:border-slate-400 focus-within:ring-1 focus-within:ring-slate-300"><input aria-label="Roof area in square feet" type="number" min="100" max="20000" step="50" value={roof} onChange={e => setRoof(Math.min(20000, Math.max(100, Number(e.target.value) || 100)))} className="w-[72px] bg-transparent py-1 text-right text-sm font-semibold text-[#0f2447] outline-none" /><span className="ml-1 text-xs text-slate-500">sqft</span></label></div>
-              <Slider className="mt-3" min={100} max={20000} step={50} value={[roof]} onValueChange={(v) => setRoof(v[0])} />
+              <div className="relative z-10 -mt-8 mb-1 flex justify-end"><label className="flex items-center rounded-md border border-slate-200 bg-white px-2 focus-within:border-slate-400 focus-within:ring-1 focus-within:ring-slate-300"><input aria-label="Roof area in square feet" type="number" min="100" max="20000" step="50" value={roofText} onChange={e => { setRoofText(e.target.value); if (e.target.value !== '') setRoof(Number(e.target.value)) }} onBlur={commitRoof} className="w-[72px] bg-transparent py-1 text-right text-sm font-semibold text-[#0f2447] outline-none" /><span className="ml-1 text-xs text-slate-500">sqft</span></label></div>
+              <Slider className="mt-3" min={100} max={20000} step={50} value={[roof]} onValueChange={(v) => { setRoof(v[0]); setRoofText(String(v[0])) }} />
             </div>
             <div>
               <Label className="text-xs font-medium text-slate-600 uppercase tracking-wider">Roof Type</Label>
