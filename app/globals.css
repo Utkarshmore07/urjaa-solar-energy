@@ -109,6 +109,17 @@
   outline-offset: 0;
 }
 
+.solar-calculator input[type='number'] {
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+
+.solar-calculator input[type='number']::-webkit-inner-spin-button,
+.solar-calculator input[type='number']::-webkit-outer-spin-button {
+  margin: 0;
+  -webkit-appearance: none;
+}
+
 /* ─── Marquee Animations ─────────────────────────────────────────────────── */
 @keyframes marquee-left {
   0%   { transform: translateX(0); }
