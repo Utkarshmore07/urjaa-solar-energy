@@ -111,6 +111,14 @@ async function handler(request, ctx) {
       return cors(NextResponse.json({ ok: true, settings }))
     }
 
+    if (path === 'calc-settings' && method === 'GET') {
+      const { data, error } = await db.from('solar_calc_settings').select('key, value')
+      if (error) throw error
+      const settings = {}
+      for (const row of data || []) settings[row.key] = row.value
+      return cors(NextResponse.json({ ok: true, settings }))
+    }
+
     if (path === 'stats' && method === 'GET') {
       const { data } = await db.from('stats').select('key, value, label, suffix').order('sort_order')
       return cors(NextResponse.json({ ok: true, stats: data || [] }))
@@ -341,6 +349,20 @@ async function handler(request, ctx) {
         const body = await request.json()
         const upserts = Object.entries(body).map(([key, value]) => ({ key, value }))
         const { error } = await db.from('site_settings').upsert(upserts, { onConflict: 'key' })
+        if (error) throw error
+        return cors(NextResponse.json({ ok: true }))
+      }
+
+      if (path === 'admin/calc-settings' && method === 'GET') {
+        const { data, error } = await db.from('solar_calc_settings').select('key, value, label, description').order('key')
+        if (error) throw error
+        return cors(NextResponse.json({ ok: true, settings: data || [] }))
+      }
+
+      if (path === 'admin/calc-settings' && method === 'PUT') {
+        const body = await request.json()
+        const entries = Object.entries(body || {}).map(([key, value]) => ({ key, value }))
+        const { error } = await db.from('solar_calc_settings').upsert(entries, { onConflict: 'key' })
         if (error) throw error
         return cors(NextResponse.json({ ok: true }))
       }

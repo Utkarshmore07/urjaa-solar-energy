@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Slider } from '@/components/ui/slider'
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { generateQuotePDF } from '@/lib/generatePDF'
-import { calculateEstimate, SOLAR_ESTIMATE_STATES } from '@/lib/solar-estimates'
+import { calculateEstimate, DEFAULT_SOLAR_ESTIMATE_CONFIG, SOLAR_ESTIMATE_STATES } from '@/lib/solar-estimates'
 import { SITE } from '@/lib/site-config'
 
 export default function Calculator({ standalone = false }) {
@@ -22,6 +22,9 @@ export default function Calculator({ standalone = false }) {
   const [roofText, setRoofText] = useState('500')
   const [consumerType, setConsumerType] = useState('residential')
   const [roofType, setRoofType] = useState('RCC')
+  const [tariff, setTariff] = useState(9)
+  const [systemCapacity, setSystemCapacity] = useState('')
+  const [estimateConfig, setEstimateConfig] = useState(DEFAULT_SOLAR_ESTIMATE_CONFIG)
   const [result, setResult] = useState(null)
   const [loading, setLoading] = useState(false)
   const [pdfOpen, setPdfOpen] = useState(false)
@@ -40,14 +43,20 @@ export default function Calculator({ standalone = false }) {
     setRoofText(String(value))
   }
 
+  const input = { state, city, monthlyBill: bill, roofArea: roof, consumerType, roofType, tariff, systemCapacity }
   const compute = () => {
-    const input = { state, city, monthlyBill: bill, roofArea: roof, consumerType, roofType }
-    setResult(calculateEstimate(input))
+    setResult(calculateEstimate(input, estimateConfig))
     setLoading(true)
     fetch('/api/calculate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(input) }).catch(() => {})
     setLoading(false)
   }
-  useEffect(() => { compute() }, []) // eslint-disable-line
+  useEffect(() => {
+    fetch('/api/calc-settings').then(response => response.json()).then(data => {
+      if (data.ok && data.settings) setEstimateConfig(current => ({ ...current, ...data.settings }))
+    }).catch(() => {})
+  }, [])
+  useEffect(() => { setTariff(Number(estimateConfig.state_tariffs?.[state]) || 7.5) }, [state, estimateConfig.state_tariffs])
+  useEffect(() => { setResult(calculateEstimate(input, estimateConfig)) }, [bill, roof, state, city, consumerType, roofType, tariff, systemCapacity, estimateConfig]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const chartData = useMemo(() => {
     if (!result) return []
@@ -118,6 +127,15 @@ export default function Calculator({ standalone = false }) {
                 </SelectContent>
               </Select>
             </div>
+            <div>
+              <Label className="text-xs font-medium text-slate-600 uppercase tracking-wider">Electricity Tariff (₹/kWh)</Label>
+              <Input className="mt-1.5 h-11" type="number" min="1" max="100" step="0.1" value={tariff} onChange={e => setTariff(Number(e.target.value) || 0)} />
+            </div>
+            <div>
+              <Label className="text-xs font-medium text-slate-600 uppercase tracking-wider">System Capacity (optional)</Label>
+              <Input className="mt-1.5 h-11" type="number" min="0.5" max="100" step="0.1" placeholder="Auto-recommend" value={systemCapacity} onChange={e => setSystemCapacity(e.target.value)} />
+              <p className="mt-1 text-[11px] text-slate-500">Leave blank to calculate from your bill and roof area.</p>
+            </div>
             <Button onClick={compute} disabled={loading} className="w-full h-11 bg-[#0f2447] hover:bg-[#0a1a34] text-white font-medium">
               {loading ? 'Calculating…' : <>Recalculate <Gauge className="h-4 w-4 ml-2" /></>}
             </Button>
@@ -125,12 +143,14 @@ export default function Calculator({ standalone = false }) {
         </div>
 
         <div className="lg:col-span-8 space-y-4">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
             {[
               { label: 'System Size', v: result ? `${result.kw} kW` : '—' },
+              { label: 'Solar Panels', v: result ? `${result.panels}` : '—' },
+              { label: 'Installation Cost', v: result ? `₹${result.grossCost.toLocaleString('en-IN')}` : '—' },
               { label: 'Net Investment', v: result ? `₹${result.netCost.toLocaleString('en-IN')}` : '—' },
               { label: 'Govt. Subsidy', v: result ? `₹${result.subsidy.toLocaleString('en-IN')}` : '—' },
-              { label: 'Payback Period', v: result ? `${result.payback} yrs` : '—' },
+              { label: 'Payback Period', v: result?.payback ? `${result.payback} yrs` : 'Not available' },
             ].map((s, i) => (
               <div key={i} className="rounded-xl bg-white border border-slate-200 p-4">
                 <div className="text-[10px] uppercase tracking-widest text-slate-500 font-semibold">{s.label}</div>
@@ -174,8 +194,20 @@ export default function Calculator({ standalone = false }) {
                   <div className="font-semibold text-[#0f2447]">{result ? `${result.annualUnits.toLocaleString('en-IN')} kWh` : '—'}</div>
                 </div>
                 <div className="rounded-lg bg-slate-50 p-2.5 border border-slate-100">
+                  <div className="text-slate-500">Annual Savings</div>
+                  <div className="font-semibold text-[#0f2447]">{result ? `₹${result.annualSavings.toLocaleString('en-IN')}` : '—'}</div>
+                </div>
+                <div className="rounded-lg bg-slate-50 p-2.5 border border-slate-100">
                   <div className="text-slate-500">25-Yr Savings</div>
                   <div className="font-semibold text-[#0f2447]">{result ? `₹${(result.twentyFiveYearSavings / 100000).toFixed(1)}L` : '—'}</div>
+                </div>
+                <div className="rounded-lg bg-slate-50 p-2.5 border border-slate-100">
+                  <div className="text-slate-500">Monthly Generation</div>
+                  <div className="font-semibold text-[#0f2447]">{result ? `${result.monthlyGeneration.toLocaleString('en-IN')} kWh` : '—'}</div>
+                </div>
+                <div className="rounded-lg bg-slate-50 p-2.5 border border-slate-100">
+                  <div className="text-slate-500">Roof Area Required</div>
+                  <div className="font-semibold text-[#0f2447]">{result ? `${result.requiredRoofArea.toLocaleString('en-IN')} sqft` : '—'}</div>
                 </div>
               </div>
             </div>
@@ -196,7 +228,7 @@ export default function Calculator({ standalone = false }) {
             </Button>
           </div>
           <p className="text-[11px] text-slate-500 text-center">
-            Note: These are estimates. Actual figures depend on site inspection, shadow analysis, panel brand and local DISCOM policies.
+            Note: All figures are estimates based on configurable assumptions, not a guaranteed return or confirmed quotation. Final costs, subsidy and savings require site inspection, shadow analysis, selected brands and local DISCOM policies.
           </p>
         </div>
       </div>

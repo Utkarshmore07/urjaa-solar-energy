@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { adminFetch } from '@/lib/admin-auth'
 import { SITE } from '@/lib/site-config'
+import { DEFAULT_SOLAR_ESTIMATE_CONFIG } from '@/lib/solar-estimates'
 
 export default function AdminSettings() {
   const [loading, setLoading] = useState(true)
@@ -29,14 +30,24 @@ export default function AdminSettings() {
     heroHeadline: 'Reliable solar energy for your home and business.',
     heroSubtitle: 'Urjaa Solar Energy designs, installs and services rooftop solar systems for residential, commercial and industrial customers across India.',
     heroVideo: SITE.heroVideo,
+    technical_specs: JSON.stringify([
+      { code: 'PV-01', title: 'Solar Panels', items: ['Tier-1 Monocrystalline', 'N-Type TOPCon', 'N-Type HJT', 'Bifacial technology', 'Manufacturer warranty'], tone: 'amber' },
+      { code: 'INV-02', title: 'Inverters', items: ['On-grid inverters', 'Off-grid inverters', 'Hybrid inverters', 'MPPT technology', 'Monitoring capabilities', 'Supported battery compatibility'], tone: 'blue' },
+      { code: 'MS-03', title: 'Mounting Structures', items: ['Hot-Dip Galvanized (HDG) structures', 'GI structures', 'Structural strength', 'Corrosion protection', 'Roof compatibility'], tone: 'emerald' },
+      { code: 'BOS-04', title: 'Electrical Protection', items: ['DCDB, ACDB, SPD and earthing', 'Protection sized to final system', 'Commissioning checks'], tone: 'blue' },
+    ], null, 2),
   })
+  const [calcSettings, setCalcSettings] = useState(DEFAULT_SOLAR_ESTIMATE_CONFIG)
 
   useEffect(() => {
     (async () => {
       try {
         const r = await adminFetch('/api/admin/settings')
         const d = await r.json()
-        if (d.ok && d.settings) setForm(f => ({ ...f, ...d.settings }))
+        if (d.ok && d.settings) setForm(f => ({ ...f, ...d.settings, technical_specs: typeof d.settings.technical_specs === 'string' ? d.settings.technical_specs : JSON.stringify(d.settings.technical_specs || JSON.parse(f.technical_specs), null, 2) }))
+        const calcResponse = await adminFetch('/api/admin/calc-settings')
+        const calcData = await calcResponse.json()
+        if (calcData.ok) setCalcSettings(current => ({ ...current, ...Object.fromEntries(calcData.settings.map(item => [item.key, item.value])) }))
       } catch {} finally { setLoading(false) }
     })()
   }, [])
@@ -46,7 +57,9 @@ export default function AdminSettings() {
     try {
       const r = await adminFetch('/api/admin/settings', { method: 'PUT', body: JSON.stringify(form) })
       const d = await r.json()
-      if (d.ok) toast.success('Settings saved. Site is now using the updated values.')
+      const calcResponse = await adminFetch('/api/admin/calc-settings', { method: 'PUT', body: JSON.stringify(calcSettings) })
+      const calcData = await calcResponse.json()
+      if (d.ok && calcData.ok) toast.success('Settings saved. Site is now using the updated values.')
       else toast.error('Save failed')
     } catch { toast.error('Network error') } finally { setSaving(false) }
   }
@@ -108,6 +121,21 @@ export default function AdminSettings() {
                 <p className="text-xs text-slate-500 mt-2">Paste a direct .mp4 URL. Falls back to a poster image if video fails to load.</p>
               </div>
             </div>
+          </Section>
+
+          <Section title="Technical Specifications">
+            <Label className="text-xs font-medium text-slate-600 uppercase tracking-wider">Categories and bullet points (JSON)</Label>
+            <Textarea className="mt-1.5 min-h-[260px] font-mono text-xs" value={form.technical_specs} onChange={e => setForm({ ...form, technical_specs: e.target.value })} />
+            <p className="mt-2 text-xs text-slate-500">Edit the category titles and items here. The public specification cards update without a frontend deployment.</p>
+          </Section>
+
+          <Section title="Solar Calculator Assumptions">
+            <div className="grid gap-4 md:grid-cols-3">
+              {['cost_per_kw_residential', 'peak_sun_hours', 'system_efficiency_pct', 'panel_wattage', 'roof_area_per_panel_sqft', 'degradation_rate_pct'].map(key => (
+                <div key={key}><Label className="text-xs font-medium text-slate-600 uppercase tracking-wider">{key.replaceAll('_', ' ')}</Label><Input className="mt-1.5 h-11" type="number" value={calcSettings[key] ?? ''} onChange={e => setCalcSettings({ ...calcSettings, [key]: Number(e.target.value) })} /></div>
+              ))}
+            </div>
+            <p className="mt-2 text-xs text-slate-500">These values drive generation, sizing, cost and long-term savings estimates. They are labelled as estimates to customers.</p>
           </Section>
 
           <div className="flex items-center gap-3 sticky bottom-4 bg-white border border-slate-200 rounded-xl p-4 shadow-lg">
